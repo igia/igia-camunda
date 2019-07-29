@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    This Source Code Form is subject to the terms of the Mozilla Public License, v.
+    2.0 with a Healthcare Disclaimer.
+    A copy of the Mozilla Public License, v. 2.0 with the Healthcare Disclaimer can
+    be found under the top level directory, named LICENSE.
+    If a copy of the MPL was not distributed with this file, You can obtain one at
+    http://mozilla.org/MPL/2.0/.
+    If a copy of the Healthcare Disclaimer was not distributed with this file, You
+    can obtain one at the project website https://github.com/igia.
+
+    Copyright (C) 2018-2019 Persistent Systems, Inc.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>io.igia</groupId>
+	<artifactId>igia-camunda</artifactId>
+	<version>0.3.0</version>
+	<name>Camunda integration with Keycloak</name>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<keycloak.version>4.5.0.Final</keycloak.version>
+		<maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
+		<dockerfile-maven-plugin.version>1.4.7</dockerfile-maven-plugin.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<dockerContext>docker</dockerContext>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-servlet-filter-adapter</artifactId>
+			<version>${keycloak.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>${maven-resources-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>docker-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/${dockerContext}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/docker</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependency</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputDirectory>
+						${project.build.directory}/${dockerContext}/lib
+					</outputDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>${dockerfile-maven-plugin.version}</version>
+				<configuration>
+					<repository>igia/${project.artifactId}</repository>
+					<tag>latest</tag>
+					<contextDirectory>${project.build.directory}/${dockerContext}</contextDirectory>
+		                        <writeTestMetadata>false</writeTestMetadata>
+				</configuration>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.0</version>
+			</plugin>
+			<!-- igia-added-plugins -->
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>3.0</version>
+				<configuration>
+					<header>HEADER</header>
+
+					<includes>
+						<include>**/*.*</include>
+					</includes>
+					<excludes>
+						<exclude>target/**/*</exclude>
+						<exclude>.mvn/**/*</exclude>
+						<exclude>**/*.md</exclude>
+						<exclude>**/.dockerignore</exclude>
+						<exclude>LICENSE</exclude>
+						<exclude>HEADER</exclude>
+						<exclude>.gitattributes</exclude>
+						<exclude>mvnw.cmd</exclude>
+						<!-- bypass temporary files created during Jenkins build -->
+						<exclude>env.txt</exclude>
+					</excludes>
+					<mapping>
+						<scss>JAVADOC_STYLE</scss>
+						<ts>SLASHSTAR_STYLE</ts>
+						<feature>SCRIPT_STYLE</feature>
+						<cmmn>XML_STYLE</cmmn>
+						<dmn>XML_STYLE</dmn>
+						<conf>SCRIPT_STYLE</conf>
+						<factories>JAVADOC_STYLE</factories>
+						<yamllint>SCRIPT_STYLE</yamllint>
+					</mapping>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
