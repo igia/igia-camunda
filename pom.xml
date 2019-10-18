@@ -19,7 +19,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.igia</groupId>
 	<artifactId>igia-camunda</artifactId>
-	<version>0.3.0</version>
+	<version>0.3.2</version>
 	<name>Camunda integration with Keycloak</name>
 
 	<properties>
